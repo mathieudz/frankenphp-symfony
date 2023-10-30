@@ -36,15 +36,16 @@ class Runner implements RunnerInterface
             $sfResponse->send();
         };
 
+        $nbRequests = 0;
         do {
-            $ret = \frankenphp_handle_request($handler);
+            $running = \frankenphp_handle_request($handler);
 
             if ($kernel instanceof TerminableInterface && $sfRequest && $sfResponse) {
                 $kernel->terminate($sfRequest, $sfResponse);
             }
 
             gc_collect_cycles();
-        } while ($ret);
+        } while ($running && !(isset($_SERVER['MAX_REQUESTS']) && ++$nbRequests >= $_SERVER['MAX_REQUESTS']));
 
         return 0;
     }
